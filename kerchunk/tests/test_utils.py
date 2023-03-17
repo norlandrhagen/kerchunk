@@ -2,7 +2,7 @@ import io
 
 import fsspec
 import kerchunk.utils
-import kerchunk.zarr
+import kerchunk.zarr_kerchunk
 import numpy as np
 import pytest
 import zarr
@@ -100,7 +100,7 @@ def test_subchunk_exact(m, chunks):
     g = zarr.open_group(store, mode="w")
     data = np.arange(100).reshape(10, 10)
     arr = g.create_dataset("data", data=data, chunks=chunks, compression=None)
-    ref = kerchunk.zarr.single_zarr("memory://test.zarr")
+    ref = kerchunk.zarr_kerchunk.single_zarr("memory://test.zarr")
 
     extra = [] if chunks[0] == 10 else ["data/1.0"]
     assert list(ref) == [".zgroup", "data/.zarray", "data/0.0"] + extra

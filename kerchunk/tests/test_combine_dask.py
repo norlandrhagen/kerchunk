@@ -5,7 +5,7 @@ import fsspec
 import xarray as xr
 
 from kerchunk.combine import auto_dask
-from kerchunk.zarr import ZarrToZarr
+from kerchunk.zarr_kerchunk import ZarrToZarr
 
 dask = pytest.importorskip("dask")
 

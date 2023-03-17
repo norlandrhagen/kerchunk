@@ -7,7 +7,7 @@ import xarray as xr
 import zarr
 
 import kerchunk.combine
-from kerchunk.zarr import single_zarr
+from kerchunk.zarr_kerchunk import single_zarr
 from kerchunk.combine import MultiZarrToZarr
 
 fs = fsspec.filesystem("memory")

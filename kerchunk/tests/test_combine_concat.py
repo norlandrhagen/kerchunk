@@ -5,7 +5,7 @@ import numpy as np
 import zarr
 
 import kerchunk.combine
-import kerchunk.zarr
+import kerchunk.zarr_kerchunk
 
 
 def test_success(tmpdir):
@@ -18,8 +18,8 @@ def test_success(tmpdir):
     g = zarr.open(fn2)
     g.create_dataset("x", data=x2, chunks=(2,))
 
-    ref1 = kerchunk.zarr.single_zarr(fn1, inline=0)
-    ref2 = kerchunk.zarr.single_zarr(fn2, inline=0)
+    ref1 = kerchunk.zarr_kerchunk.single_zarr(fn1, inline=0)
+    ref2 = kerchunk.zarr_kerchunk.single_zarr(fn2, inline=0)
 
     out = kerchunk.combine.concatenate_arrays([ref1, ref2], path="x")
 
@@ -38,8 +38,8 @@ def test_fail_chunks(tmpdir):
     g = zarr.open(fn2)
     g.create_dataset("x", data=x2, chunks=(3,))
 
-    ref1 = kerchunk.zarr.single_zarr(fn1, inline=0)
-    ref2 = kerchunk.zarr.single_zarr(fn2, inline=0)
+    ref1 = kerchunk.zarr_kerchunk.single_zarr(fn1, inline=0)
+    ref2 = kerchunk.zarr_kerchunk.single_zarr(fn2, inline=0)
 
     with pytest.raises(ValueError):
         kerchunk.combine.concatenate_arrays([ref1, ref2], path="x", check_arrays=True)
@@ -55,8 +55,8 @@ def test_fail_shape(tmpdir):
     g = zarr.open(fn2)
     g.create_dataset("x", data=x2, chunks=(2,))
 
-    ref1 = kerchunk.zarr.single_zarr(fn1, inline=0)
-    ref2 = kerchunk.zarr.single_zarr(fn2, inline=0)
+    ref1 = kerchunk.zarr_kerchunk.single_zarr(fn1, inline=0)
+    ref2 = kerchunk.zarr_kerchunk.single_zarr(fn2, inline=0)
 
     with pytest.raises(ValueError):
         kerchunk.combine.concatenate_arrays([ref1, ref2], path="x", check_arrays=True)

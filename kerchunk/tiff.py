@@ -64,14 +64,35 @@ def tiff_to_zarr(urlpath, remote_options=None, target=None, target_options=None)
                     if isinstance(v, enum.EnumMeta):
                         meta[k] = v._name_
                 out[".zattrs"] = ujson.dumps(meta)
+    # If tiff is zarr array, convert into a zarr group for Xarray IO
+    # if out == array, convert to group, assign additional attrs
+    out = {"data/" + k: v for k, v in out.items()}
+    out[".zgroup"] = '{"zarr_format": 2}'
+
     if "GTRasterTypeGeoKey" in meta:
-        # TODO: make dataset and assign coords for geoTIFF
-        # import zarr
-        # fs = fsspec.filesystem("reference", fo=out
-        # z = zarr.open(out.get_mapper())
-        # coords = generate_coords(meta, z.shape)
-        # rasterio.crs.CRS.from_epsg(attrs['ProjectedCSTypeGeoKey']).to_wkt("WKT1_GDAL") ??
-        pass
+        try:
+            import rioxarray
+            import rasterio
+        except ModuleNotFoundError:  # pragma: no cover
+            raise ImportWarning(
+        "rioxarray/rasterio is required for generating latitude, longitude values.")
+        import zarr
+        fs = fsspec.filesystem("reference", fo=out)
+        z = zarr.open(fs.get_mapper())
+        # coords = generate_coords(meta, z[0].shape)
+        crs = rasterio.crs.CRS.from_epsg(meta['GeographicTypeGeoKey'])
+        print(urlpath)
+        rds = rioxarray.open_rasterio(urlpath)
+        projected = rds.rio.reproject(crs)
+        lon = projected.x.values.tolist()
+        lat = projected.y.values.tolist()
+        out["lat/0.0"] = lat
+        out["lat/.zattrs"] = ""
+        out["lat/.zarray"] = ""
+        out["lon/0.0"] = lon
+        out["lon/.zattrs"] = ""
+        out["lon/.zarray"] = ""
+        # To Do: Assign lat and lon cord arrays to reference file. How to open those and how does xarray open those
     if target is not None:
         with fsspec.open(target, **(target_options or {})) as of:
             ujson.dump(out, of)
